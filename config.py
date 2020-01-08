@@ -4,6 +4,7 @@ from logging import Formatter
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
+    STANDALONE = False
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -32,9 +33,17 @@ class ProductionConfig(Config):
     LOG_EXCEPTIONS = True
 
 
+class StandaloneConfig(Config):
+    STANDALONE = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'database/data-sa.sqlite')
+    LOG_EXCEPTIONS = False
+
+
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
+    'standalone': StandaloneConfig,
 
     'default': DevelopmentConfig
 }

@@ -5,9 +5,8 @@ import requests
 import uuid
 import threading
 from config import basedir
-from . import db
-from .models import User, Sample, Action, Upload
-from sqlalchemy.sql import func
+from .models import User, Sample, Action
+from .util import filesystem_usage
 
 start_time = time.time()
 usage_statistics_url_source = 'https://raw.githubusercontent.com/HolgerGraef/MSM-usage-statistics/master/url'
@@ -42,9 +41,13 @@ class UsageStatisticsThread(threading.Thread):
                 f.write(key)
 
         # obtain git revision and check if repo is clean
-        repo = git.Repo(basedir)  # get Sample Manager git repo
-        git_rev = str(repo.rev_parse('HEAD'))
-        git_clean = str(not repo.is_dirty())
+        if self.app.config['STANDALONE']:
+            git_rev = 'standalone'
+            git_clean = True
+        else:
+            repo = git.Repo(basedir)  # get Sample Manager git repo
+            git_rev = str(repo.rev_parse('HEAD'))
+            git_clean = str(not repo.is_dirty())
 
         dbsize, totuploadvol, availablevol = filesystem_usage(self.app)
 
@@ -73,17 +76,3 @@ class UsageStatisticsThread(threading.Thread):
                 pass        # do not crash when there is e.g. a ConnectionError, simply keep trying
 
             time.sleep(usage_statistics_sleep_time)
-
-
-def filesystem_usage(app):
-    with app.app_context():
-        # get size of the SQLite database
-        dbsize = os.path.getsize(app.config['SQLALCHEMY_DATABASE_URI'][10:])
-
-        # get total upload volume (code redundant with main/views.py)
-        totuploadvol = db.session.query(func.sum(Upload.size)).first()[0]
-
-        # get free disk space (code redundant with main/views.py)
-        statvfs = os.statvfs(os.path.dirname(__file__))
-        availablevol = statvfs.f_frsize * statvfs.f_bavail
-    return dbsize, totuploadvol, availablevol

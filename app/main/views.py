@@ -11,6 +11,7 @@ from .. import smbinterface
 from ..validators import validate_form_field
 from sqlalchemy.sql import func
 from sqlalchemy import not_
+from ..util import get_free_space
 import os
 import inspect
 
@@ -31,9 +32,9 @@ def index(sampleid=0):
 @main.route('/welcome')
 @login_required
 def welcome():
+    # TODO: should use filesystem_usage() from util.py here
     # get free disk space
-    statvfs = os.statvfs(os.path.dirname(__file__))
-    availablevol = statvfs.f_frsize*statvfs.f_bavail
+    availablevol = get_free_space(os.path.dirname(__file__))
 
     # get size of the SQLite database
     dbsize = os.path.getsize(current_app.config['SQLALCHEMY_DATABASE_URI'][10:])

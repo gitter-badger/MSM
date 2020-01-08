@@ -52,6 +52,23 @@ You can start the development server by simply executing the "run script":
 
     $ ./run
 
+# Creating a standalone .exe file
+
+Tested in Windows 10 with Anaconda3 5.3.1 64-bit.
+
+Create a Python 3.7 conda environment and open its terminal. Execute:
+
+    pip install -r requirements.txt
+    pip install -r requirements_standalone.txt
+    conda install git
+    pyinstaller standalone.spec
+
+NB: The version numbers in requirements_standalone.txt should be strictly followed. For example, I encountered problems when using PyQt5 and PyQtWebEngine with version 5.14 instead of 5.12 (the .exe's application window opened and then closed immediately).
+
+The software can then be started using:
+
+    dist\standalone\standalone.exe
+
 # Using GitHub deploy keys
 
 As long as this is a private repository, access can be granted using deploy keys. You can generate a public/private key
