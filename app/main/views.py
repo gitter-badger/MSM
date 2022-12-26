@@ -23,6 +23,7 @@ from sqlalchemy.sql import func
 from sqlalchemy import not_
 import os
 import inspect
+import types
 
 
 @main.route("/")
@@ -811,7 +812,7 @@ def updatefield(target, field, id):
         if modifier is None:
             setvalue = value
         # check if the modifier is a function
-        elif type(modifier) == type(lambda x: x):
+        elif isinstance(modifier, types.FunctionType):
             argno = len(inspect.getargspec(modifier).args)
             if argno == 1:
                 setvalue = modifier(value)
